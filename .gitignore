@@ -1,4 +1,2 @@
-# Dev scripts
-*.bat
 *.log
-*.log-*
+node_modules
