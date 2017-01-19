@@ -2,7 +2,7 @@
   "publishName": "Terabyte Service",
   "electronVersion": "1.4.13",
   "name": "terabyte-service",
-  "version": "0.0.92",
+  "version": "0.0.5",
   "description": "Repair service WMA™ - Work manager application",
   "main": "index.js",
   "scripts": {
@@ -13,9 +13,9 @@
   "author": "N3stY",
   "license": "MIT",
   "homepage": "http://www.n3sty.com/",
-  "repository": "https://github.com/N3stY/work-manager",
+  "repository": "https://github.com/N3stY/rs-wma-app",
   "auto-updater": {
-    "repo": "N3stY/work-manager",
+    "repo": "N3stY/rs-wma-app",
     "branch": "master"
   },
   "devDependencies": {
