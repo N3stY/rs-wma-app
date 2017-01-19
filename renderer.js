@@ -1,7 +1,30 @@
 (function() {
-  var AutoUpdater, autoupdater, basename, connection, data, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, uquery;
+  var AutoUpdater, appRoot, autoupdater, basename, cfg, config, connection, data, error, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, uquery;
 
   fs = require('fs');
+
+  appRoot = require('app-root-path');
+
+  cfg = appRoot + "/config.json";
+
+  config = null;
+
+  try {
+    config = JSON.parse(fs.readFileSync(cfg));
+  } catch (error1) {
+    error = error1;
+    throw error;
+    console.error('Inpossibile leggere file configurazioni');
+    Materialize.toast('Inpossibile leggere file configurazioni', 4000);
+  }
+
+  $("#host").val(config.host);
+
+  $("#database").val(config.database);
+
+  $("#user").val(config.user);
+
+  $("#password").val(config.password);
 
   window.cfg_db = {
     "host": "sql11.freemysqlhosting.net",
@@ -106,10 +129,10 @@
   qCount = 0;
 
   window.connection = connection = mysql.createConnection({
-    host: cfg_db.host,
-    user: cfg_db.user,
-    password: cfg_db.password,
-    database: cfg_db.database
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
   });
 
   window.mn = {
@@ -346,6 +369,44 @@
       });
     });
   }
+
+  $("#settings").click(function() {
+    $(".settings-overlay").css("display", "block");
+    $(".settings-overlay").animate({
+      opacity: .5
+    }, "800ms");
+    $(".settings").toggleClass("show");
+  });
+
+  $(".settings-overlay").click(function() {
+    $(".settings-overlay").animate({
+      opacity: 0
+    }, "800ms", function() {
+      $(".settings-overlay").css("display", "none");
+    });
+    $(".settings").toggleClass("show");
+  });
+
+  $("#set_save").click(function() {
+    var form, json, n, q;
+    form = $("#jsform").serialize();
+    q = form.split('&');
+    n = {};
+    q.forEach(function(o) {
+      var f, key, value;
+      f = o.split("=");
+      key = f[0];
+      value = f[1];
+      return n[key] = value;
+    });
+    json = JSON.stringify(n);
+    fs.writeFile('./config.json', json, function(err) {
+      if (err) {
+        throw err;
+      }
+      console.log('It\'s saved!');
+    });
+  });
 
 }).call(this);
 

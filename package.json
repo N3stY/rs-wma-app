@@ -7,8 +7,9 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . tbs-app --platform=win32 --arch=x64 --app-version=0.0.2 --out=../build --icon=./app.ico --ignore=build.bat --prune",
-    "build-farch": "electron-packager . tbs-app --platform=win32 --arch=ia32 --arch=x64 --app-version=0.0.2 --out=../build --icon=./app.ico --ignore=start.bat --ignore=build.bat --prune"
+    "build": "electron-packager . rswma-app --x64 --app-version=0.0.5 --out=../build --icon=./app.ico --ignore=build.bat --prune",
+    "tbuild": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico deb tar.xz",
+    "tbuild2": "electron-packager . rswma-app --linux --mac --win --ia32 --x64 --out=../build --icon=./app.ico deb tar.xz dmg"
   },
   "author": "N3stY",
   "license": "MIT",
@@ -23,6 +24,7 @@
     "coffee-script": "^1.12.1"
   },
   "dependencies": {
+    "app-root-path": "^2.0.1",
     "auto-updater": "^1.0.2",
     "express": "^4.10.2",
     "jquery": "^3.1.1",
