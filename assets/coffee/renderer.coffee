@@ -1,18 +1,15 @@
 # out: ../../app/$1.js, sourcemap: true
-# This file is required by the index.html file and will
-# be executed in the renderer process for that window.
-# All of the Node.js APIs are available in this process.
 fs = require('fs')
-window.cfg_db =
-  "host":"localhost"
-  "database":"tbservice"
-  "user":"root"
-  "password":""
 #window.cfg_db =
-#  "host":"sql11.freemysqlhosting.net"
-#  "database":"sql11154081"
-#  "user":"sql11154081"
-#  "password":"rvhLBIXsD6"
+#  "host":"localhost"
+#  "database":"tbservice"
+#  "user":"root"
+#  "password":""
+window.cfg_db =
+  "host":"sql11.freemysqlhosting.net"
+  "database":"sql11154081"
+  "user":"sql11154081"
+  "password":"rvhLBIXsD6"
 mysql = require('mysql')
 
 basename = (path, suffix) ->
@@ -21,9 +18,89 @@ basename = (path, suffix) ->
     b = b.substr(0, b.length - (suffix.length))
   b
 
+AutoUpdater = require('auto-updater')
+
+autoupdater = new AutoUpdater
+  pathToJson: ''
+  autoupdate: false
+  checkgit: true
+  jsonhost: 'raw.githubusercontent.com'
+  contenthost: 'codeload.github.com'
+  progressDebounce: 0
+  devmode: false
+
+autoupdater.on 'check.up-to-date', (v) ->
+  console.info 'You have the latest version: ' + v
+  return
+autoupdater.on 'check.out-dated', (v_old, v) ->
+  console.warn "Your version is outdated. #{v_old} of #{v}"
+  $("#latest-version").html(v)
+  $(".update-available").addClass("show")
+  return
+autoupdater.on 'update.extracted', ->
+  console.log 'Update extracted successfully!'
+  console.warn 'RESTART THE APP!'
+  Materialize.toast 'Applicazione aggiornata', 4000
+  $(".update-available").html '<div class="updating">
+    <span id="update-mess">Aggiornato</span>
+    <a class="btn right" id="restart">Riavvia</a>
+  </div>'
+  return
+autoupdater.on 'download.start', (name) ->
+  $(".update-mess").html "Scaricamento"
+  return
+autoupdater.on 'download.progress', (name, perc) ->
+  $(".update-mess").html "Scaricamento #{perc}%"
+  return
+autoupdater.on 'download.end', (name) ->
+  console.log 'Scaricato ' + name
+  return
+autoupdater.on 'download.error', (err) ->
+  console.error 'Errore durante scaricamento: ' + err
+  Materialize.toast 'Errore durante scaricamento', 4000
+  return
+autoupdater.on 'update.downloaded', ->
+  console.log 'Update downloaded and ready for install'
+  autoupdater.fire 'extract'
+  return
+autoupdater.on 'error', (name, e) ->
+  console.error name, e
+  return
+
+autoupdater.fire 'check'
+
+
+$("body").on 'click', '#restart',  ->
+  location.reload()
+
+$("#update").click ->
+  autoupdater.fire 'download-update'
+  $(".update-available").html '<div class="updating">
+    <span id="update-mess">Aggiornamento</span>
+    <div class="preloader-wrapper small active right">
+      <div class="spinner-layer spinner-green-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>'
+
+parseHtmlEntities = (str) ->
+  str.replace /&#([0-9]{1,3});/gi, (match, numStr) ->
+    num = parseInt(numStr, 10)
+    # read num as normal number
+    String.fromCharCode num
+
 page = basename location.pathname, ".html"
 uquery = location.search.substr 1
 page_id = uquery.split("=")[1]
+numRows = 0
+qCount = 0
 
 window.connection = connection = mysql.createConnection(
   host: cfg_db.host
@@ -124,7 +201,8 @@ connection.connect (err) ->
     return
   console.info 'Connesso. ID connessione: ' + connection.threadId
   return
-connection.query 'SELECT * FROM `orders` ORDER BY date DESC LIMIT 0,20', (err, rows, fields) ->
+connection.query "SELECT * FROM `orders` ORDER BY date DESC LIMIT #{qCount},20", (err, rows, fields) ->
+  numRows = rows.length
   if err
     throw err
   rows.forEach (row) ->
@@ -141,6 +219,8 @@ connection.query 'SELECT * FROM `orders` ORDER BY date DESC LIMIT 0,20', (err, r
       <td class="right">'+states[row.state]+'</td>
     </tr>'
     $('.tooltipped').tooltip()
+    if numRows > 20
+      qCount += 20
   return
 
 window.changeState = (opt, id) ->
@@ -148,7 +228,7 @@ window.changeState = (opt, id) ->
 
 
 $('body').on 'click', '#save', ->
-  if(page == "add_ogject")
+  if(page == "add_object")
     form = $("#jsform").serialize()
     q = form.split '&'
     n = {}
@@ -169,7 +249,7 @@ $('body').on 'click', '#save', ->
         Materialize.toast 'Oggetto&nbsp;<b>"'+n.title+'"</b>&nbsp; è stato aggiunto', 4000
         setTimeout location.href = "index.html", 3000
     return
-  if(page == "edit_ogject")
+  if(page == "edit_object")
     form = $("#jsform").serialize()
     q = form.split '&'
     n = {}
@@ -177,7 +257,7 @@ $('body').on 'click', '#save', ->
       f = o.split "="
       key = f[0]
       value = f[1]
-      n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"')
+      n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@')
 
 
     connection.query "SELECT * FROM `orders` WHERE id='"+page_id+"'", (err, rows, fields) ->
@@ -195,9 +275,9 @@ $('body').on 'click', '#save', ->
 
 $('body').on 'click', '#edit', ->
   id = $("#info-modal").attr("data-id")
-  location.href = "edit_ogject.html?id="+id
+  location.href = "edit_object.html?id="+id
 
-if(page == "edit_ogject")
+if(page == "edit_object")
   data = JSON.parse(localStorage.getItem(page_id))
 
   $("input, textarea").each ->
@@ -207,3 +287,26 @@ if(page == "edit_ogject")
     tid = $(@).attr "id"
     opt = $("#"+tid)[0].options
     $(opt[data[tid]]).attr('selected', 'true')
+
+if $(window).scrollTop() + $(window).height() >= $(document).height() - 200 && numRows > 20
+  connection.query "SELECT * FROM `orders` ORDER BY date DESC LIMIT #{qCount},20", (err, rows, fields) ->
+    numRows = rows.length
+    if err
+      throw err
+    rows.forEach (row) ->
+      localStorage.setItem(row.id, JSON.stringify(row))
+      date = new Date row.date * 1000
+      time = date.getHours() + ':' + date.getMinutes()
+      data = date.getDate()+'/'+months[date.getMonth()]+'/'+date.getFullYear()
+      $("#list").append '<tr data-id="'+row.id+'" class="the-row" data-target="info-modal">
+        <td style="width:48px"><icon class="tooltipped" data-position="left" data-delay="50" data-tooltip="'+types[row.type].title+'">'+types[row.type].icon+'</icon></td>
+        <td>'+row.title+'</td>
+        <td>'+row.owner+'</td>
+        <td>'+time+'</td>
+        <td>'+data+'</td>
+        <td class="right">'+states[row.state]+'</td>
+      </tr>'
+      $('.tooltipped').tooltip()
+      if numRows > qCount + 20
+        qCount += 20
+    return

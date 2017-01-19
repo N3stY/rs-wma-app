@@ -2,7 +2,7 @@
   "publishName": "Terabyte Service",
   "electronVersion": "1.4.13",
   "name": "terabyte-service",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Repair service WMA™ - Work manager application",
   "main": "index.js",
   "scripts": {

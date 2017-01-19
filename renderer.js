@@ -1,5 +1,5 @@
 (function() {
-  var AutoUpdater, autoupdater, basename, connection, data, fs, mysql, page, page_id, parseHtmlEntities, uquery;
+  var AutoUpdater, autoupdater, basename, connection, data, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, uquery;
 
   fs = require('fs');
 
@@ -100,6 +100,10 @@
   uquery = location.search.substr(1);
 
   page_id = uquery.split("=")[1];
+
+  numRows = 0;
+
+  qCount = 0;
 
   window.connection = connection = mysql.createConnection({
     host: cfg_db.host,
@@ -220,7 +224,8 @@
     console.info('Connesso. ID connessione: ' + connection.threadId);
   });
 
-  connection.query('SELECT * FROM `orders` ORDER BY date DESC LIMIT 0,20', function(err, rows, fields) {
+  connection.query("SELECT * FROM `orders` ORDER BY date DESC LIMIT " + qCount + ",20", function(err, rows, fields) {
+    numRows = rows.length;
     if (err) {
       throw err;
     }
@@ -231,7 +236,10 @@
       time = date.getHours() + ':' + date.getMinutes();
       data = date.getDate() + '/' + months[date.getMonth()] + '/' + date.getFullYear();
       $("#list").append('<tr data-id="' + row.id + '" class="the-row" data-target="info-modal"> <td style="width:48px"><icon class="tooltipped" data-position="left" data-delay="50" data-tooltip="' + types[row.type].title + '">' + types[row.type].icon + '</icon></td> <td>' + row.title + '</td> <td>' + row.owner + '</td> <td>' + time + '</td> <td>' + data + '</td> <td class="right">' + states[row.state] + '</td> </tr>');
-      return $('.tooltipped').tooltip();
+      $('.tooltipped').tooltip();
+      if (numRows > 20) {
+        return qCount += 20;
+      }
     });
   });
 
@@ -315,6 +323,27 @@
       tid = $(this).attr("id");
       opt = $("#" + tid)[0].options;
       return $(opt[data[tid]]).attr('selected', 'true');
+    });
+  }
+
+  if ($(window).scrollTop() + $(window).height() >= $(document).height() - 200 && numRows > 20) {
+    connection.query("SELECT * FROM `orders` ORDER BY date DESC LIMIT " + qCount + ",20", function(err, rows, fields) {
+      numRows = rows.length;
+      if (err) {
+        throw err;
+      }
+      rows.forEach(function(row) {
+        var date, time;
+        localStorage.setItem(row.id, JSON.stringify(row));
+        date = new Date(row.date * 1000);
+        time = date.getHours() + ':' + date.getMinutes();
+        data = date.getDate() + '/' + months[date.getMonth()] + '/' + date.getFullYear();
+        $("#list").append('<tr data-id="' + row.id + '" class="the-row" data-target="info-modal"> <td style="width:48px"><icon class="tooltipped" data-position="left" data-delay="50" data-tooltip="' + types[row.type].title + '">' + types[row.type].icon + '</icon></td> <td>' + row.title + '</td> <td>' + row.owner + '</td> <td>' + time + '</td> <td>' + data + '</td> <td class="right">' + states[row.state] + '</td> </tr>');
+        $('.tooltipped').tooltip();
+        if (numRows > qCount + 20) {
+          return qCount += 20;
+        }
+      });
     });
   }
 

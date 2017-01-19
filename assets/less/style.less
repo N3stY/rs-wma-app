@@ -1,4 +1,4 @@
-// out: ../css/style.min.css, sourcemap: false, compress: true
+// out: ../../app/assets/css/style.min.css, sourcemap: false, compress: true
 @import 'settings.less';
 @theme: #2ecc71;
 @border: darken(#eeeeee, 2%);
@@ -477,4 +477,32 @@ label.active {
 }
 textarea {
   padding: .8rem 0 1.6rem 0 !important;
+}
+.update-available {
+  position: fixed;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  padding: 24px;
+  .shadow();
+  z-index: 999;
+  .transition();
+  font-weight: 700;
+  color: @text1;
+  line-height: 36px;
+  &.show {
+    bottom: 0;
+    .updating {
+      opacity: 1;
+    }
+  }
+  #update {
+    background-color: @theme;
+  }
+  .updating {
+    height: 36px;
+    line-height: 36px;
+    opacity: 0;
+  }
 }
