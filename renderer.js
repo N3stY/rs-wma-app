@@ -15,9 +15,13 @@
     config = JSON.parse(fs.readFileSync(cfg));
   } catch (error1) {
     error = error1;
-    throw error;
     console.error('Inpossibile leggere file configurazioni');
     Materialize.toast('Inpossibile leggere file configurazioni', 4000);
+    $(".settings-overlay").css("display", "block");
+    $(".settings-overlay").animate({
+      opacity: .5
+    }, "800ms");
+    $(".settings").toggleClass("show");
   }
 
   $("#host").val(config.host);

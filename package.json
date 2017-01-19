@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-packager . rswma-app --x64 --app-version=0.0.5 --out=../build --icon=./app.ico --ignore=build.bat --prune",
-    "build-prod": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico"
+    "build-prod": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico --ignore=config.json --ignore=build.bat --ignore=start.bat --ignore=build-prod.bat --osx-sign.type=development"
   },
   "author": "N3stY",
   "license": "MIT",
