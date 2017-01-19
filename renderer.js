@@ -1,5 +1,5 @@
 (function() {
-  var AutoUpdater, appRoot, autoupdater, basename, cfg, config, connection, data, error, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, uquery;
+  var AutoUpdater, appRoot, autoupdater, basename, cfg, config, connection, data, error, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, updateChecker, uquery;
 
   fs = require('fs');
 
@@ -93,6 +93,10 @@
   });
 
   autoupdater.fire('check');
+
+  updateChecker = window.setInterval(function() {
+    autoupdater.fire('check');
+  }, 1800000);
 
   $("body").on('click', '#restart', function() {
     return location.reload();

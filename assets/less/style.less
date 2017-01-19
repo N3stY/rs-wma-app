@@ -42,6 +42,9 @@ ficon {
   width: 7px;
   height: 7px;
 }
+.btn {
+  .noselect();
+}
 body {
   background: #fafafa;
 }
@@ -67,7 +70,6 @@ body {
 header {
   background: @theme;
   position: relative;
-  z-index: 990;
   &::after {
     display: table;
     content: " ";
@@ -83,6 +85,8 @@ header {
     background: rgba(0, 0, 0, .16);
     padding: 0 8;
     cursor: default;
+    z-index: 1001;
+    position: relative;
     #window-title {
       float: left;
       line-height: 30px;
@@ -179,7 +183,7 @@ header {
       margin: 12px 0;
     }
   }
-  .return-nav {
+  .menu-nav {
     float: left;
     width: 50px;
     height: 50px;
@@ -504,5 +508,41 @@ textarea {
     height: 36px;
     line-height: 36px;
     opacity: 0;
+  }
+}
+.settings-overlay {
+  position: fixed;
+  z-index: 999;
+  top: -100px;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 125%;
+  width: 100%;
+  background: #000;
+  display: none;
+  opacity: 0;
+  will-change: opacity;
+}
+.settings {
+  position: fixed;
+  z-index: 1000;
+  width: 80%;
+  height: 100%;
+  background: #fff;
+  .shadow(2);
+  top: 0;
+  right: -100%;
+  padding: 54px 24px 24px;
+  line-height: 1;
+  .transition(all, 800ms, ease);
+  &.show {
+    right: 0;
+  }
+  .title {
+    font-size: 24px;
+    color: @text1;
+    font-weight: 500;
+    margin-bottom: 24px;
   }
 }

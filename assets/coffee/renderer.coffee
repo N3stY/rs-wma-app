@@ -1,16 +1,25 @@
 # out: ../../app/$1.js, sourcemap: true
 fs = require('fs')
-#window.cfg_db =
-#  "host":"localhost"
-#  "database":"tbservice"
-#  "user":"root"
-#  "password":""
-window.cfg_db =
-  "host":"sql11.freemysqlhosting.net"
-  "database":"sql11154081"
-  "user":"sql11154081"
-  "password":"rvhLBIXsD6"
+
+appRoot = require('app-root-path')
+
+cfg = "#{appRoot}/config.json"
+
 mysql = require('mysql')
+
+config = null
+
+try
+  config = JSON.parse fs.readFileSync cfg
+catch error
+  throw error
+  console.error 'Inpossibile leggere file configurazioni'
+  Materialize.toast 'Inpossibile leggere file configurazioni', 4000
+
+$("#host").val config.host
+$("#database").val config.database
+$("#user").val config.user
+$("#password").val config.password
 
 basename = (path, suffix) ->
   b = path.replace(/^.*[\/\\]/g, '')
@@ -69,6 +78,10 @@ autoupdater.on 'error', (name, e) ->
 
 autoupdater.fire 'check'
 
+updateChecker = window.setInterval ->
+  autoupdater.fire 'check'
+  return
+, 1800000
 
 $("body").on 'click', '#restart',  ->
   location.reload()
@@ -102,11 +115,11 @@ page_id = uquery.split("=")[1]
 numRows = 0
 qCount = 0
 
-window.connection = connection = mysql.createConnection(
-  host: cfg_db.host
-  user: cfg_db.user
-  password: cfg_db.password
-  database: cfg_db.database)
+window.connection = connection = mysql.createConnection
+  host: config.host
+  user: config.user
+  password: config.password
+  database: config.database
 
 window.mn =
   0: "Genaio"
@@ -310,3 +323,34 @@ if $(window).scrollTop() + $(window).height() >= $(document).height() - 200 && n
       if numRows > qCount + 20
         qCount += 20
     return
+$("#settings").click ->
+  $(".settings-overlay").css("display", "block")
+  $(".settings-overlay").animate
+    opacity: .5, "800ms"
+  $(".settings").toggleClass("show")
+  return
+
+$(".settings-overlay").click ->
+  $(".settings-overlay").animate
+    opacity: 0, "800ms", ->
+      $(".settings-overlay").css("display", "none")
+      return
+  $(".settings").toggleClass("show")
+  return
+
+$("#set_save").click ->
+  form = $("#jsform").serialize()
+  q = form.split '&'
+  n = {}
+  q.forEach (o) ->
+    f = o.split "="
+    key = f[0]
+    value = f[1]
+    n[key] = value
+  json = JSON.stringify n
+  fs.writeFile './config.json', json, (err) ->
+    if (err)
+      throw err;
+    console.log('It\'s saved!');
+    return
+  return
