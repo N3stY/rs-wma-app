@@ -15,6 +15,12 @@
     config = JSON.parse(fs.readFileSync(cfg));
   } catch (error1) {
     error = error1;
+    config = {
+      host: "localhost",
+      database: "undefined",
+      user: "root",
+      password: ""
+    };
     console.error('Inpossibile leggere file configurazioni');
     Materialize.toast('Inpossibile leggere file configurazioni', 4000);
     $(".settings-overlay").css("display", "block");
@@ -23,14 +29,6 @@
     }, "800ms");
     $(".settings").toggleClass("show");
   }
-
-  $("#host").val(config.host);
-
-  $("#database").val(config.database);
-
-  $("#user").val(config.user);
-
-  $("#password").val(config.password);
 
   basename = function(path, suffix) {
     var b;
@@ -388,6 +386,14 @@
     $(".settings").toggleClass("show");
   });
 
+  $("#host").val(config.host);
+
+  $("#database").val(config.database);
+
+  $("#user").val(config.user);
+
+  $("#password").val(config.password);
+
   $("#set_save").click(function() {
     var form, json, n, q;
     form = $("#jsform").serialize();
@@ -401,11 +407,20 @@
       return n[key] = value;
     });
     json = JSON.stringify(n);
-    fs.writeFile('./config.json', json, function(err) {
+    fs.writeFile(cfg, json, function(err) {
       if (err) {
         throw err;
       }
-      console.log('It\'s saved!');
+      Materialize.toast('Configurazione aggiornata', 4000);
+      $(".settings-overlay").animate({
+        opacity: 0
+      }, "800ms", function() {
+        $(".settings-overlay").css("display", "none");
+      });
+      $(".settings").toggleClass("show");
+      updateChecker = window.setTimeout(function() {
+        location.reload();
+      }, 2500);
     });
   });
 
