@@ -70,11 +70,6 @@
     autoupdater.fire('extract');
   });
 
-  autoupdater.on('end', function() {
-    console.log('Installazione completeta');
-    Materialize.toast('Aggiornamento completato', 4000);
-  });
-
   autoupdater.on('error', function(name, e) {
     console.error(name, e);
   });
@@ -231,7 +226,7 @@
 
   $('body').on('click', '#save', function() {
     var form, n, q;
-    if (page === "add_ogject") {
+    if (page === "add_obgject") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -258,7 +253,7 @@
       });
       return;
     }
-    if (page === "edit_ogject") {
+    if (page === "edit_obgject") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -290,10 +285,10 @@
   $('body').on('click', '#edit', function() {
     var id;
     id = $("#info-modal").attr("data-id");
-    return location.href = "edit_ogject.html?id=" + id;
+    return location.href = "edit_obgject.html?id=" + id;
   });
 
-  if (page === "edit_ogject") {
+  if (page === "edit_obgject") {
     data = JSON.parse(localStorage.getItem(page_id));
     $("input, textarea").each(function() {
       var el, tid;
