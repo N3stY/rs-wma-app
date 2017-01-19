@@ -3,16 +3,16 @@
 # be executed in the renderer process for that window.
 # All of the Node.js APIs are available in this process.
 fs = require('fs')
-window.cfg_db =
-  "host":"localhost"
-  "database":"tbservice"
-  "user":"root"
-  "password":""
 #window.cfg_db =
-#  "host":"sql11.freemysqlhosting.net"
-#  "database":"sql11154081"
-#  "user":"sql11154081"
-#  "password":"rvhLBIXsD6"
+#  "host":"localhost"
+#  "database":"tbservice"
+#  "user":"root"
+#  "password":""
+window.cfg_db =
+  "host":"sql11.freemysqlhosting.net"
+  "database":"sql11154081"
+  "user":"sql11154081"
+  "password":"rvhLBIXsD6"
 mysql = require('mysql')
 
 basename = (path, suffix) ->
@@ -20,6 +20,81 @@ basename = (path, suffix) ->
   if typeof suffix == 'string' and b.substr(b.length - (suffix.length)) == suffix
     b = b.substr(0, b.length - (suffix.length))
   b
+
+AutoUpdater = require('auto-updater')
+
+autoupdater = new AutoUpdater
+  pathToJson: ''
+  autoupdate: false
+  checkgit: true
+  jsonhost: 'raw.githubusercontent.com'
+  contenthost: 'codeload.github.com'
+  progressDebounce: 0
+  devmode: false
+
+autoupdater.on 'check.up-to-date', (v) ->
+  console.info 'You have the latest version: ' + v
+  return
+autoupdater.on 'check.out-dated', (v_old, v) ->
+  console.warn "Your version is outdated. #{v_old} of #{v}"
+  $("#latest-version").html(v)
+  $(".update-available").addClass("show")
+  return
+autoupdater.on 'update.extracted', ->
+  console.log 'Update extracted successfully!'
+  console.warn 'RESTART THE APP!'
+  Materialize.toast 'Applicazione aggiornata', 4000
+  $(".update-available").html '<div class="updating">
+    <span id="update-mess">Aggiornato</span>
+    <a class="btn right" id="restart">Riavvia</a>
+  </div>'
+  return
+autoupdater.on 'download.start', (name) ->
+  $(".update-mess").html "Scaricamento"
+  return
+autoupdater.on 'download.progress', (name, perc) ->
+  $(".update-mess").html "Scaricamento #{perc}%"
+  return
+autoupdater.on 'download.end', (name) ->
+  console.log 'Scaricato ' + name
+  return
+autoupdater.on 'download.error', (err) ->
+  console.error 'Errore durante scaricamento: ' + err
+  Materialize.toast 'Errore durante scaricamento', 4000
+  return
+autoupdater.on 'update.downloaded', ->
+  console.log 'Update downloaded and ready for install'
+  autoupdater.fire 'extract'
+  return
+autoupdater.on 'error', (name, e) ->
+  console.error name, e
+  return
+
+autoupdater.fire 'check'
+
+$("body").on 'click', '#restart',  ->
+  location.reload()
+
+
+
+$("#update").click ->
+  autoupdater.fire 'download-update'
+  $(".update-available").html '<div class="updating">
+    <span id="update-mess">Aggiornamento</span>
+    <div class="preloader-wrapper small active right">
+      <div class="spinner-layer spinner-green-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </div>'
+
+
 
 page = basename location.pathname, ".html"
 uquery = location.search.substr 1
@@ -148,7 +223,7 @@ window.changeState = (opt, id) ->
 
 
 $('body').on 'click', '#save', ->
-  if(page == "add_ogject")
+  if(page == "add_object")
     form = $("#jsform").serialize()
     q = form.split '&'
     n = {}
@@ -169,7 +244,7 @@ $('body').on 'click', '#save', ->
         Materialize.toast 'Oggetto&nbsp;<b>"'+n.title+'"</b>&nbsp; è stato aggiunto', 4000
         setTimeout location.href = "index.html", 3000
     return
-  if(page == "edit_ogject")
+  if(page == "edit_object")
     form = $("#jsform").serialize()
     q = form.split '&'
     n = {}
@@ -195,9 +270,9 @@ $('body').on 'click', '#save', ->
 
 $('body').on 'click', '#edit', ->
   id = $("#info-modal").attr("data-id")
-  location.href = "edit_ogject.html?id="+id
+  location.href = "edit_object.html?id="+id
 
-if(page == "edit_ogject")
+if(page == "edit_object")
   data = JSON.parse(localStorage.getItem(page_id))
 
   $("input, textarea").each ->
