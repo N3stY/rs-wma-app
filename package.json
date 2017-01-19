@@ -2,7 +2,7 @@
   "publishName": "Terabyte Service",
   "electronVersion": "1.4.13",
   "name": "terabyte-service",
-  "version": "0.0.5",
+  "version": "0.0.2",
   "description": "Official Terabyte Service app. Developed by BlackTower",
   "main": "index.js",
   "scripts": {
