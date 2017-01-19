@@ -46,7 +46,6 @@
   autoupdater.on('update.extracted', function() {
     console.log('Update extracted successfully!');
     console.warn('RESTART THE APP!');
-    Materialize.toast('Applicazione aggiornata', 4000);
     $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornato</span> <a class="btn right" id="restart">Riavvia</a> </div>');
   });
 
@@ -64,7 +63,6 @@
 
   autoupdater.on('download.error', function(err) {
     console.error('Errore durante scaricamento: ' + err);
-    Materialize.toast('Errore durante scaricamento', 4000);
   });
 
   autoupdater.on('update.downloaded', function() {
@@ -78,12 +76,7 @@
 
   autoupdater.fire('check');
 
-  $("body").on('click', '#restart', function() {
-    return location.reload();
-  });
-
   $("#update").click(function() {
-    autoupdater.fire('download-update');
     return $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornamento</span> <div class="preloader-wrapper small active right"> <div class="spinner-layer spinner-green-only"> <div class="circle-clipper left"> <div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div> </div><div class="circle-clipper right"> <div class="circle"></div> </div> </div> </div> </div>');
   });
 
@@ -233,7 +226,7 @@
 
   $('body').on('click', '#save', function() {
     var form, n, q;
-    if (page === "add_object") {
+    if (page === "add_obgject") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -260,7 +253,7 @@
       });
       return;
     }
-    if (page === "edit_object") {
+    if (page === "edit_obgject") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -292,10 +285,10 @@
   $('body').on('click', '#edit', function() {
     var id;
     id = $("#info-modal").attr("data-id");
-    return location.href = "edit_object.html?id=" + id;
+    return location.href = "edit_obgject.html?id=" + id;
   });
 
-  if (page === "edit_object") {
+  if (page === "edit_obgject") {
     data = JSON.parse(localStorage.getItem(page_id));
     $("input, textarea").each(function() {
       var el, tid;
