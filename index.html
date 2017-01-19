@@ -50,7 +50,7 @@
   </div>
 
   <div class="fixed-action-btn">
-    <a href="add_ogject.html" class="btn-floating btn-large">
+    <a href="add_object.html" class="btn-floating btn-large">
       <i class="large material-icons">add</i>
     </a>
   </div>
@@ -129,8 +129,10 @@
     <a class="btn right" id="update">Aggiorna</a>
   </div>
   <script src="./assets/kit/materialize.min.js" type="text/javascript"></script>
-  <script src="./assets/js/functions.js" type="text/javascript"></script>
-  <script src="./renderer.js" type="text/javascript"></script>
-  <script src="./assets/js/main.js" type="text/javascript"></script>
+  <script>
+    require('./assets/js/functions.js');
+    require('./renderer.js');
+    require('./assets/js/main.js');
+  </script>
 </body>
 </html>

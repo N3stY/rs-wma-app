@@ -1,5 +1,5 @@
 (function() {
-  var AutoUpdater, autoupdater, basename, connection, data, fs, mysql, page, page_id, uquery;
+  var AutoUpdater, autoupdater, basename, connection, data, fs, mysql, page, page_id, parseHtmlEntities, uquery;
 
   fs = require('fs');
 
@@ -46,6 +46,7 @@
   autoupdater.on('update.extracted', function() {
     console.log('Update extracted successfully!');
     console.warn('RESTART THE APP!');
+    Materialize.toast('Applicazione aggiornata', 4000);
     $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornato</span> <a class="btn right" id="restart">Riavvia</a> </div>');
   });
 
@@ -63,6 +64,7 @@
 
   autoupdater.on('download.error', function(err) {
     console.error('Errore durante scaricamento: ' + err);
+    Materialize.toast('Errore durante scaricamento', 4000);
   });
 
   autoupdater.on('update.downloaded', function() {
@@ -76,9 +78,22 @@
 
   autoupdater.fire('check');
 
+  $("body").on('click', '#restart', function() {
+    return location.reload();
+  });
+
   $("#update").click(function() {
+    autoupdater.fire('download-update');
     return $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornamento</span> <div class="preloader-wrapper small active right"> <div class="spinner-layer spinner-green-only"> <div class="circle-clipper left"> <div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div> </div><div class="circle-clipper right"> <div class="circle"></div> </div> </div> </div> </div>');
   });
+
+  parseHtmlEntities = function(str) {
+    return str.replace(/&#([0-9]{1,3});/gi, function(match, numStr) {
+      var num;
+      num = parseInt(numStr, 10);
+      return String.fromCharCode(num);
+    });
+  };
 
   page = basename(location.pathname, ".html");
 
@@ -226,7 +241,7 @@
 
   $('body').on('click', '#save', function() {
     var form, n, q;
-    if (page === "add_obgject") {
+    if (page === "add_object") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -253,7 +268,7 @@
       });
       return;
     }
-    if (page === "edit_obgject") {
+    if (page === "edit_object") {
       form = $("#jsform").serialize();
       q = form.split('&');
       n = {};
@@ -262,7 +277,7 @@
         f = o.split("=");
         key = f[0];
         value = f[1];
-        return n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"');
+        return n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@');
       });
       return connection.query("SELECT * FROM `orders` WHERE id='" + page_id + "'", function(err, rows, fields) {
         if (err) {
@@ -285,10 +300,10 @@
   $('body').on('click', '#edit', function() {
     var id;
     id = $("#info-modal").attr("data-id");
-    return location.href = "edit_obgject.html?id=" + id;
+    return location.href = "edit_object.html?id=" + id;
   });
 
-  if (page === "edit_obgject") {
+  if (page === "edit_object") {
     data = JSON.parse(localStorage.getItem(page_id));
     $("input, textarea").each(function() {
       var el, tid;
