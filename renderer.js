@@ -33,17 +33,57 @@
     devmode: false
   });
 
+  autoupdater.on('check.up-to-date', function(v) {
+    console.info('You have the latest version: ' + v);
+  });
+
   autoupdater.on('check.out-dated', function(v_old, v) {
-    return console.warn("Your version is outdated. " + v_old + " of " + v);
+    console.warn("Your version is outdated. " + v_old + " of " + v);
+    $("#latest-version").html(v);
+    $(".update-available").addClass("show");
+  });
+
+  autoupdater.on('update.extracted', function() {
+    console.log('Update extracted successfully!');
+    console.warn('RESTART THE APP!');
+    $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornato</span> <a class="btn right" id="restart">Riavvia</a> </div>');
+  });
+
+  autoupdater.on('download.start', function(name) {
+    $(".update-mess").html("Scaricamento");
+  });
+
+  autoupdater.on('download.progress', function(name, perc) {
+    $(".update-mess").html("Scaricamento " + perc + "%");
+  });
+
+  autoupdater.on('download.end', function(name) {
+    console.log('Scaricato ' + name);
+  });
+
+  autoupdater.on('download.error', function(err) {
+    console.error('Errore durante scaricamento: ' + err);
+  });
+
+  autoupdater.on('update.downloaded', function() {
+    console.log('Update downloaded and ready for install');
+    autoupdater.fire('extract');
+  });
+
+  autoupdater.on('end', function() {
+    console.log('Installazione completeta');
+    Materialize.toast('Aggiornamento completato', 4000);
   });
 
   autoupdater.on('error', function(name, e) {
-    return console.error(name, e);
+    console.error(name, e);
   });
 
   autoupdater.fire('check');
 
-  console.log(autoupdater);
+  $("#update").click(function() {
+    return $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornamento</span> <div class="preloader-wrapper small active right"> <div class="spinner-layer spinner-green-only"> <div class="circle-clipper left"> <div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div> </div><div class="circle-clipper right"> <div class="circle"></div> </div> </div> </div> </div>');
+  });
 
   page = basename(location.pathname, ".html");
 
