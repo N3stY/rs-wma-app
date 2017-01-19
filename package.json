@@ -2,14 +2,13 @@
   "publishName": "Terabyte Service",
   "electronVersion": "1.4.13",
   "name": "terabyte-service",
-  "version": "0.0.5",
+  "version": "0.0.9",
   "description": "Repair service WMA™ - Work manager application",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-packager . rswma-app --x64 --app-version=0.0.5 --out=../build --icon=./app.ico --ignore=build.bat --prune",
-    "tbuild": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico deb tar.xz",
-    "tbuild2": "electron-packager . rswma-app --linux --mac --win --ia32 --x64 --out=../build --icon=./app.ico deb tar.xz dmg"
+    "build-prod": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico"
   },
   "author": "N3stY",
   "license": "MIT",

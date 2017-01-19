@@ -7,6 +7,8 @@
 
   cfg = appRoot + "/config.json";
 
+  mysql = require('mysql');
+
   config = null;
 
   try {
@@ -25,15 +27,6 @@
   $("#user").val(config.user);
 
   $("#password").val(config.password);
-
-  window.cfg_db = {
-    "host": "sql11.freemysqlhosting.net",
-    "database": "sql11154081",
-    "user": "sql11154081",
-    "password": "rvhLBIXsD6"
-  };
-
-  mysql = require('mysql');
 
   basename = function(path, suffix) {
     var b;
