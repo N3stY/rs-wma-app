@@ -12,14 +12,17 @@ config = null
 try
   config = JSON.parse fs.readFileSync cfg
 catch error
-  throw error
+  config =
+    host: "localhost"
+    database: "undefined"
+    user: "root"
+    password: ""
   console.error 'Inpossibile leggere file configurazioni'
   Materialize.toast 'Inpossibile leggere file configurazioni', 4000
-
-$("#host").val config.host
-$("#database").val config.database
-$("#user").val config.user
-$("#password").val config.password
+  $(".settings-overlay").css("display", "block")
+  $(".settings-overlay").animate
+    opacity: .5, "800ms"
+  $(".settings").toggleClass("show")
 
 basename = (path, suffix) ->
   b = path.replace(/^.*[\/\\]/g, '')
@@ -338,6 +341,11 @@ $(".settings-overlay").click ->
   $(".settings").toggleClass("show")
   return
 
+$("#host").val config.host
+$("#database").val config.database
+$("#user").val config.user
+$("#password").val config.password
+
 $("#set_save").click ->
   form = $("#jsform").serialize()
   q = form.split '&'
@@ -348,9 +356,18 @@ $("#set_save").click ->
     value = f[1]
     n[key] = value
   json = JSON.stringify n
-  fs.writeFile './config.json', json, (err) ->
+  fs.writeFile cfg, json, (err) ->
     if (err)
       throw err;
-    console.log('It\'s saved!');
+    Materialize.toast 'Configurazione aggiornata', 4000
+    $(".settings-overlay").animate
+      opacity: 0, "800ms", ->
+        $(".settings-overlay").css("display", "none")
+        return
+    $(".settings").toggleClass("show")
+    updateChecker = window.setTimeout ->
+      location.reload()
+      return
+    , 2500
     return
   return
