@@ -1,4 +1,2 @@
-# Dev scripts
-*.bat
+# Logs
 *.log
-*.log-*
