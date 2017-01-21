@@ -59,7 +59,7 @@
       withdrawal.html(withdrawals[data.withdrawal]);
       itime.html(time);
       idate.html(date);
-      number.html(data.phone);
+      number.html("(" + data.phone.substr(0, 3) + ") " + data.phone.substr(3, 2) + "-" + data.phone.substr(5, 2) + "-" + data.phone.substr(7, 3));
       email.html(data.email);
       alert_mode.html(alerts[data.alert]);
       state.html(states[data.state]);
@@ -172,8 +172,8 @@
   });
 
   try {
-    $('#phone').mask('(000) 00-00-000', {
-      placeholder: "(___) __ __ ___"
+    $("#phone").mask("(999) 99-99-999", {
+      placeholder: "(___) __-__-___"
     });
   } catch (error1) {
     error = error1;

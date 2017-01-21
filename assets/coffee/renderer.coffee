@@ -5,9 +5,14 @@ appRoot = require('app-root-path')
 
 cfg = "#{appRoot}/config.json"
 
+pkgd = "#{appRoot}/package.json"
+
 mysql = require('mysql')
 
 config = null
+
+try
+  pkg = JSON.parse fs.readFileSync pkgd
 
 try
   config = JSON.parse fs.readFileSync cfg
@@ -29,6 +34,8 @@ basename = (path, suffix) ->
   if typeof suffix == 'string' and b.substr(b.length - (suffix.length)) == suffix
     b = b.substr(0, b.length - (suffix.length))
   b
+$("#window-title").html config.orgname
+$("#orgname").val config.orgname
 
 AutoUpdater = require('auto-updater')
 
@@ -40,6 +47,8 @@ autoupdater = new AutoUpdater
   contenthost: 'codeload.github.com'
   progressDebounce: 0
   devmode: false
+
+console.log autoupdater
 
 autoupdater.on 'check.up-to-date', (v) ->
   console.info 'You have the latest version: ' + v
@@ -55,7 +64,7 @@ autoupdater.on 'update.extracted', ->
   Materialize.toast 'Applicazione aggiornata', 4000
   $(".update-available").html '<div class="updating">
     <span id="update-mess">Aggiornato</span>
-    <a class="btn right" id="restart">Riavvia</a>
+    <a class="btn theme right" id="restart">Riavvia</a>
   </div>'
   return
 autoupdater.on 'download.start', (name) ->
@@ -88,6 +97,7 @@ updateChecker = window.setInterval ->
 
 $("body").on 'click', '#restart',  ->
   location.reload()
+  return
 
 $("#update").click ->
   autoupdater.fire 'download-update'
@@ -105,12 +115,13 @@ $("#update").click ->
       </div>
     </div>
   </div>'
+  return
 
 parseHtmlEntities = (str) ->
   str.replace /&#([0-9]{1,3});/gi, (match, numStr) ->
     num = parseInt(numStr, 10)
-    # read num as normal number
     String.fromCharCode num
+  return
 
 page = basename location.pathname, ".html"
 uquery = location.search.substr 1
@@ -237,10 +248,12 @@ connection.query "SELECT * FROM `orders` ORDER BY date DESC LIMIT #{qCount},20",
     $('.tooltipped').tooltip()
     if numRows > 20
       qCount += 20
+      return
   return
 
 window.changeState = (opt, id) ->
   connection.query "UPDATE `orders` SET state = ? WHERE id='"+id+"'", opt
+  return
 
 
 $('body').on 'click', '#save', ->
@@ -252,7 +265,11 @@ $('body').on 'click', '#save', ->
       f = o.split "="
       key = f[0]
       value = f[1]
-      n[key] = value
+      if key == "phone"
+        n[key] = value.replace(/\(/ig, '').replace(/\)/ig, '').replace(/-/ig, '').replace(/ /ig, '').replace(/%20/ig, '')
+      else
+        n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@')
+      return
     n.code = uID()
     n.date = Math.floor Date.now() / 1000
     connection.query "SELECT * FROM `orders` WHERE code='"+n.code+"'", (err, rows, fields) ->
@@ -261,9 +278,12 @@ $('body').on 'click', '#save', ->
       if rows.length != 0
         Materialize.toast 'Codice già essiste nel database', 4000
       else
-        connection.query 'INSERT INTO `orders` SET ?', n
-        Materialize.toast 'Oggetto&nbsp;<b>"'+n.title+'"</b>&nbsp; è stato aggiunto', 4000
-        setTimeout location.href = "index.html", 3000
+        connection.query "INSERT INTO `orders` SET ?", n
+        Materialize.toast "Oggetto&nbsp;<b>\"#{n.title}\"</b>&nbsp; è stato aggiunto", 4000
+        setTimeout ->
+          location.href = "index.html"
+        , 1500
+        return
     return
   if(page == "edit_object")
     form = $("#jsform").serialize()
@@ -273,8 +293,11 @@ $('body').on 'click', '#save', ->
       f = o.split "="
       key = f[0]
       value = f[1]
-      n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@')
-
+      if key == "phone"
+        n[key] = value.replace(/\(/ig, '').replace(/\)/ig, '').replace(/-/ig, '').replace(/ /ig, '').replace(/%20/ig, '')
+      else
+        n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@')
+      return
 
     connection.query "SELECT * FROM `orders` WHERE id='"+page_id+"'", (err, rows, fields) ->
       if err
@@ -286,12 +309,16 @@ $('body').on 'click', '#save', ->
           n.date = Math.floor Date.now() / 1000
         connection.query "UPDATE `orders` SET ? WHERE id='"+page_id+"'", n
         Materialize.toast 'Oggetto&nbsp;<b>"'+n.title+'"</b>&nbsp; è stato aggiornato', 4000
-        setTimeout location.href = "index.html", 3000
+        setTimeout ->
+          location.href = "index.html"
+        , 1500
       return
+    return
 
 $('body').on 'click', '#edit', ->
   id = $("#info-modal").attr("data-id")
   location.href = "edit_object.html?id="+id
+  return
 
 if(page == "edit_object")
   data = JSON.parse(localStorage.getItem(page_id))
@@ -303,6 +330,7 @@ if(page == "edit_object")
     tid = $(@).attr "id"
     opt = $("#"+tid)[0].options
     $(opt[data[tid]]).attr('selected', 'true')
+    return
 
 if $(window).scrollTop() + $(window).height() >= $(document).height() - 200 && numRows > 20
   connection.query "SELECT * FROM `orders` ORDER BY date DESC LIMIT #{qCount},20", (err, rows, fields) ->
@@ -325,6 +353,7 @@ if $(window).scrollTop() + $(window).height() >= $(document).height() - 200 && n
       $('.tooltipped').tooltip()
       if numRows > qCount + 20
         qCount += 20
+      return
     return
 $("#settings").click ->
   $(".settings-overlay").css("display", "block")
@@ -334,6 +363,13 @@ $("#settings").click ->
   return
 
 $(".settings-overlay").click ->
+  $(".settings-overlay").animate
+    opacity: 0, "800ms", ->
+      $(".settings-overlay").css("display", "none")
+      return
+  $(".settings").toggleClass("show")
+  return
+$("#close_settings").click ->
   $(".settings-overlay").animate
     opacity: 0, "800ms", ->
       $(".settings-overlay").css("display", "none")
@@ -354,7 +390,8 @@ $("#set_save").click ->
     f = o.split "="
     key = f[0]
     value = f[1]
-    n[key] = value
+    n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@')
+    return
   json = JSON.stringify n
   fs.writeFile cfg, json, (err) ->
     if (err)
@@ -371,3 +408,5 @@ $("#set_save").click ->
     , 2500
     return
   return
+
+$("#app-version").html "v"+pkg.version

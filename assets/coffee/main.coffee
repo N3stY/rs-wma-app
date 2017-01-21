@@ -1,4 +1,4 @@
-# out: ../js/$1.js, sourcemap: true
+# out: ../../app/assets/js/$1.js, sourcemap: true
 $('.modal').modal()
 $(".button-collapse").sideNav()
 $(".disabled").click( (e) ->
@@ -21,6 +21,7 @@ state      = $('#state')
 comment    = $('#comment')
 # Modal elements
 
+
 $('.modal').modal
   dismissible: true
   opacity: .5
@@ -38,19 +39,19 @@ $('.modal').modal
     time = d.getHours() + ':' + d.getMinutes()
     date = d.getDate()+'/'+months[d.getMonth()]+'/'+d.getFullYear()
 
-    code.html(data.code)
-    type.html(types[data.type].title)
-    title.html(data.title)
-    owner.html(data.owner)
-    cod_fisc.html(data['cod-fisc'])
-    withdrawal.html(withdrawals[data.withdrawal])
-    itime.html(time)
-    idate.html(date)
-    number.html(data.phone)
-    email.html(data.email)
-    alert_mode.html(alerts[data.alert])
-    state.html(states[data.state])
-    comment.html(data.comment)
+    code.html data.code
+    type.html types[data.type].title
+    title.html data.title
+    owner.html data.owner
+    cod_fisc.html data['cod-fisc']
+    withdrawal.html withdrawals[data.withdrawal]
+    itime.html time
+    idate.html date
+    number.html "("+data.phone.substr(0, 3)+") "+data.phone.substr(3, 2)+"-"+data.phone.substr(5, 2)+"-"+ data.phone.substr(7, 3)
+    email.html data.email
+    alert_mode.html alerts[data.alert]
+    state.html states[data.state]
+    comment.html data.comment
 
     $('#info-modal').attr("data-id", data.id)
     return
@@ -135,6 +136,7 @@ $(".modal-action").click ->
     Materialize.toast 'Stato di oggetto passato a&nbsp;<b>"'+stato+'"</b>', 4000
 
 try
-  $('#phone').mask('(000) 00-00-000', {placeholder: "(___) __ __ ___"})
+  $("#phone").mask "(999) 99-99-999",
+    placeholder: "(___) __-__-___"
 catch error
   return

@@ -1,5 +1,5 @@
 (function() {
-  var AutoUpdater, appRoot, autoupdater, basename, cfg, config, connection, data, error, fs, mysql, numRows, page, page_id, parseHtmlEntities, qCount, updateChecker, uquery;
+  var AutoUpdater, appRoot, autoupdater, basename, cfg, config, connection, data, error, fs, mysql, numRows, page, page_id, parseHtmlEntities, pkg, pkgd, qCount, updateChecker, uquery;
 
   fs = require('fs');
 
@@ -7,9 +7,15 @@
 
   cfg = appRoot + "/config.json";
 
+  pkgd = appRoot + "/package.json";
+
   mysql = require('mysql');
 
   config = null;
+
+  try {
+    pkg = JSON.parse(fs.readFileSync(pkgd));
+  } catch (error1) {}
 
   try {
     config = JSON.parse(fs.readFileSync(cfg));
@@ -39,6 +45,10 @@
     return b;
   };
 
+  $("#window-title").html(config.orgname);
+
+  $("#orgname").val(config.orgname);
+
   AutoUpdater = require('auto-updater');
 
   autoupdater = new AutoUpdater({
@@ -50,6 +60,8 @@
     progressDebounce: 0,
     devmode: false
   });
+
+  console.log(autoupdater);
 
   autoupdater.on('check.up-to-date', function(v) {
     console.info('You have the latest version: ' + v);
@@ -65,7 +77,7 @@
     console.log('Update extracted successfully!');
     console.warn('RESTART THE APP!');
     Materialize.toast('Applicazione aggiornata', 4000);
-    $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornato</span> <a class="btn right" id="restart">Riavvia</a> </div>');
+    $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornato</span> <a class="btn theme right" id="restart">Riavvia</a> </div>');
   });
 
   autoupdater.on('download.start', function(name) {
@@ -101,16 +113,16 @@
   }, 1800000);
 
   $("body").on('click', '#restart', function() {
-    return location.reload();
+    location.reload();
   });
 
   $("#update").click(function() {
     autoupdater.fire('download-update');
-    return $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornamento</span> <div class="preloader-wrapper small active right"> <div class="spinner-layer spinner-green-only"> <div class="circle-clipper left"> <div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div> </div><div class="circle-clipper right"> <div class="circle"></div> </div> </div> </div> </div>');
+    $(".update-available").html('<div class="updating"> <span id="update-mess">Aggiornamento</span> <div class="preloader-wrapper small active right"> <div class="spinner-layer spinner-green-only"> <div class="circle-clipper left"> <div class="circle"></div> </div><div class="gap-patch"> <div class="circle"></div> </div><div class="circle-clipper right"> <div class="circle"></div> </div> </div> </div> </div>');
   });
 
   parseHtmlEntities = function(str) {
-    return str.replace(/&#([0-9]{1,3});/gi, function(match, numStr) {
+    str.replace(/&#([0-9]{1,3});/gi, function(match, numStr) {
       var num;
       num = parseInt(numStr, 10);
       return String.fromCharCode(num);
@@ -260,13 +272,13 @@
       $("#list").append('<tr data-id="' + row.id + '" class="the-row" data-target="info-modal"> <td style="width:48px"><icon class="tooltipped" data-position="left" data-delay="50" data-tooltip="' + types[row.type].title + '">' + types[row.type].icon + '</icon></td> <td>' + row.title + '</td> <td>' + row.owner + '</td> <td>' + time + '</td> <td>' + data + '</td> <td class="right">' + states[row.state] + '</td> </tr>');
       $('.tooltipped').tooltip();
       if (numRows > 20) {
-        return qCount += 20;
+        qCount += 20;
       }
     });
   });
 
   window.changeState = function(opt, id) {
-    return connection.query("UPDATE `orders` SET state = ? WHERE id='" + id + "'", opt);
+    connection.query("UPDATE `orders` SET state = ? WHERE id='" + id + "'", opt);
   };
 
   $('body').on('click', '#save', function() {
@@ -280,7 +292,11 @@
         f = o.split("=");
         key = f[0];
         value = f[1];
-        return n[key] = value;
+        if (key === "phone") {
+          n[key] = value.replace(/\(/ig, '').replace(/\)/ig, '').replace(/-/ig, '').replace(/ /ig, '').replace(/%20/ig, '');
+        } else {
+          n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@');
+        }
       });
       n.code = uID();
       n.date = Math.floor(Date.now() / 1000);
@@ -291,9 +307,11 @@
         if (rows.length !== 0) {
           return Materialize.toast('Codice già essiste nel database', 4000);
         } else {
-          connection.query('INSERT INTO `orders` SET ?', n);
-          Materialize.toast('Oggetto&nbsp;<b>"' + n.title + '"</b>&nbsp; è stato aggiunto', 4000);
-          return setTimeout(location.href = "index.html", 3000);
+          connection.query("INSERT INTO `orders` SET ?", n);
+          Materialize.toast("Oggetto&nbsp;<b>\"" + n.title + "\"</b>&nbsp; è stato aggiunto", 4000);
+          setTimeout(function() {
+            return location.href = "index.html";
+          }, 1500);
         }
       });
       return;
@@ -307,9 +325,13 @@
         f = o.split("=");
         key = f[0];
         value = f[1];
-        return n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@');
+        if (key === "phone") {
+          n[key] = value.replace(/\(/ig, '').replace(/\)/ig, '').replace(/-/ig, '').replace(/ /ig, '').replace(/%20/ig, '');
+        } else {
+          n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@');
+        }
       });
-      return connection.query("SELECT * FROM `orders` WHERE id='" + page_id + "'", function(err, rows, fields) {
+      connection.query("SELECT * FROM `orders` WHERE id='" + page_id + "'", function(err, rows, fields) {
         if (err) {
           throw err;
         }
@@ -321,7 +343,9 @@
           }
           connection.query("UPDATE `orders` SET ? WHERE id='" + page_id + "'", n);
           Materialize.toast('Oggetto&nbsp;<b>"' + n.title + '"</b>&nbsp; è stato aggiornato', 4000);
-          setTimeout(location.href = "index.html", 3000);
+          setTimeout(function() {
+            return location.href = "index.html";
+          }, 1500);
         }
       });
     }
@@ -330,7 +354,7 @@
   $('body').on('click', '#edit', function() {
     var id;
     id = $("#info-modal").attr("data-id");
-    return location.href = "edit_object.html?id=" + id;
+    location.href = "edit_object.html?id=" + id;
   });
 
   if (page === "edit_object") {
@@ -344,7 +368,7 @@
       var opt, tid;
       tid = $(this).attr("id");
       opt = $("#" + tid)[0].options;
-      return $(opt[data[tid]]).attr('selected', 'true');
+      $(opt[data[tid]]).attr('selected', 'true');
     });
   }
 
@@ -363,7 +387,7 @@
         $("#list").append('<tr data-id="' + row.id + '" class="the-row" data-target="info-modal"> <td style="width:48px"><icon class="tooltipped" data-position="left" data-delay="50" data-tooltip="' + types[row.type].title + '">' + types[row.type].icon + '</icon></td> <td>' + row.title + '</td> <td>' + row.owner + '</td> <td>' + time + '</td> <td>' + data + '</td> <td class="right">' + states[row.state] + '</td> </tr>');
         $('.tooltipped').tooltip();
         if (numRows > qCount + 20) {
-          return qCount += 20;
+          qCount += 20;
         }
       });
     });
@@ -378,6 +402,15 @@
   });
 
   $(".settings-overlay").click(function() {
+    $(".settings-overlay").animate({
+      opacity: 0
+    }, "800ms", function() {
+      $(".settings-overlay").css("display", "none");
+    });
+    $(".settings").toggleClass("show");
+  });
+
+  $("#close_settings").click(function() {
     $(".settings-overlay").animate({
       opacity: 0
     }, "800ms", function() {
@@ -404,7 +437,7 @@
       f = o.split("=");
       key = f[0];
       value = f[1];
-      return n[key] = value;
+      n[key] = value.replace(/%20/ig, ' ').replace(/%2C/ig, ',').replace(/%22/ig, '"').replace(/%40/ig, '@');
     });
     json = JSON.stringify(n);
     fs.writeFile(cfg, json, function(err) {
@@ -423,6 +456,8 @@
       }, 2500);
     });
   });
+
+  $("#app-version").html("v" + pkg.version);
 
 }).call(this);
 
