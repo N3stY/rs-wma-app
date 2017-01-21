@@ -40,15 +40,12 @@ $("#orgname").val config.orgname
 AutoUpdater = require('auto-updater')
 
 autoupdater = new AutoUpdater
-  pathToJson: ''
   autoupdate: false
   checkgit: true
   jsonhost: 'raw.githubusercontent.com'
   contenthost: 'codeload.github.com'
   progressDebounce: 0
-  devmode: false
-
-console.log autoupdater
+  devmode: true
 
 autoupdater.on 'check.up-to-date', (v) ->
   console.info 'You have the latest version: ' + v

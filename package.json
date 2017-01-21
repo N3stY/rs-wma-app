@@ -1,14 +1,14 @@
 {
   "publishName": "Terabyte Service",
-  "electronVersion": "1.4.13",
+  "electronVersion": "4.1.2",
   "name": "terabyte-service",
   "version": "0.1.0",
   "description": "Repair service WMA™ - Work manager application",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . rswma-app --platform=win32 --arch=x64 --app-version=0.0.9 --out=../build --icon=./app.ico --ignore=config.json --ignore=build.bat --ignore=start.bat --ignore=build-prod.bat",
-    "build-prod": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico --ignore=config.json --ignore=build.bat --ignore=start.bat --ignore=build-prod.bat --osx-sign.type=development"
+    "build": "electron-packager . rswma-app --platform=win32 --arch=x64 --app-version=0.0.9 --out=../build --icon=./app.ico --ignore=config.json",
+    "build-prod": "electron-packager . rswma-app --platform=all --arch=all --out=../build --icon=./app.ico --ignore=config.json --ignore=debug.log --ignore=start.bat --ignore=build.bat --ignore=build-prod.bat --osx-sign.type=development --overwrite"
   },
   "author": "N3stY",
   "license": "MIT",

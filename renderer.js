@@ -52,16 +52,13 @@
   AutoUpdater = require('auto-updater');
 
   autoupdater = new AutoUpdater({
-    pathToJson: '',
     autoupdate: false,
     checkgit: true,
     jsonhost: 'raw.githubusercontent.com',
     contenthost: 'codeload.github.com',
     progressDebounce: 0,
-    devmode: false
+    devmode: true
   });
-
-  console.log(autoupdater);
 
   autoupdater.on('check.up-to-date', function(v) {
     console.info('You have the latest version: ' + v);
